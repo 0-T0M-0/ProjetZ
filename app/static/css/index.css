@@ -1,0 +1,176 @@
+:root {
+    --primary-color: #4285F4;
+    --secondary-color: #34A853;
+    --accent-color: #FBBC05;
+    --text-color: #202124;
+    --background-color: #f8f9fa;
+    --glow-color: rgba(66, 133, 244, 0.3);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Roboto', sans-serif;
+}
+
+body {
+    background-color: var(--background-color);
+    min-height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+.background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    z-index: 1;
+}
+
+.footprints-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.footprint {
+    position: absolute;
+    width: 30px;
+    height: 60px;
+    background: url('../images/footprint.svg') no-repeat center center;
+    background-size: contain;
+    opacity: 0;
+    animation: footprintFade 3s ease-in-out forwards;
+    transform-origin: center center;
+}
+
+@keyframes footprintFade {
+    0% {
+        opacity: 0;
+        transform: scale(0.5) rotate(var(--rotation, 0deg));
+    }
+    20% {
+        opacity: 0.8;
+        transform: scale(1) rotate(var(--rotation, 0deg));
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1.2) rotate(var(--rotation, 0deg));
+    }
+}
+
+.content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+    text-align: center;
+}
+
+.title {
+    font-size: 4rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    animation: titleFloat 3s ease-in-out infinite;
+}
+
+.subtitle {
+    font-size: 1.5rem;
+    color: var(--text-color);
+    margin-bottom: 3rem;
+    opacity: 0;
+    animation: fadeIn 1s ease-out forwards 0.5s;
+}
+
+.button-container {
+    position: relative;
+    margin-top: 2rem;
+}
+
+.enter-button {
+    position: relative;
+    display: inline-block;
+    padding: 1rem 3rem;
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: white;
+    background: var(--primary-color);
+    border-radius: 50px;
+    text-decoration: none;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.enter-button:hover {
+    transform: translateY(-2px);
+}
+
+.button-glow {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle, var(--glow-color) 0%, transparent 70%);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.enter-button:hover .button-glow {
+    opacity: 1;
+}
+
+.button-text {
+    position: relative;
+    z-index: 1;
+}
+
+@keyframes titleFloat {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Animation du bouton au survol */
+.enter-button::before {
+    content: '';
+    position: absolute;
+    top: var(--y, 50%);
+    left: var(--x, 50%);
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, var(--glow-color) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.enter-button:hover::before {
+    opacity: 1;
+} 

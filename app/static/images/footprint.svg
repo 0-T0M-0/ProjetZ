@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="40" height="80" viewBox="0 0 40 80" xmlns="http://www.w3.org/2000/svg">
+  <!-- Talon -->
+  <path d="M10 60 
+           Q20 70, 30 60 
+           Q32 58, 30 50 
+           Q20 55, 10 50 
+           Q8 58, 10 60 Z" 
+        fill="#4285F4" opacity="0.85"/>
+
+  <!-- Avant-pied -->
+  <path d="M10 20 
+           Q5 35, 10 45 
+           Q20 50, 30 45 
+           Q35 35, 30 20 
+           Q20 10, 10 20 Z"
+        fill="#4285F4" opacity="0.85"/>
+
+  <!-- Détails semelle (traits stylisés) -->
+  <rect x="17" y="24" width="6" height="2" rx="1" fill="white" opacity="0.5"/>
+  <rect x="15" y="30" width="10" height="2" rx="1" fill="white" opacity="0.5"/>
+  <rect x="17" y="36" width="6" height="2" rx="1" fill="white" opacity="0.5"/>
+
+  <rect x="17" y="54" width="6" height="2" rx="1" fill="white" opacity="0.5"/>
+</svg>

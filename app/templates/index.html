@@ -1,13 +1,163 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Z-tracker - Accueil</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Z-tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <h1>Bienvenue sur Z-tracker</h1>
-    <p>Cliquez <a href="{{ url_for('main.map') }}">ici</a> pour accéder à la carte.</p>
+    <div class="background">
+        <div class="footprints-container"></div>
+    </div>
+    
+    <div class="content">
+        <h1 class="title">Z-tracker</h1>
+        <p class="subtitle">Suivez les mouvements du Z en temps réel</p>
+        
+        <div class="button-container">
+            <a href="{{ url_for('main.map') }}" class="enter-button">
+                <span class="button-text">Entrer</span>
+                <div class="button-glow"></div>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        class FootprintPath {
+            constructor() {
+                this.paths = [];
+                this.currentPath = null;
+                this.footprints = [];
+                this.lastFootprintTime = 0;
+                this.footprintInterval = 500; // Intervalle entre chaque empreinte
+                this.pathDuration = 10000; // Durée d'un chemin complet
+                this.stepWidth = 40; // Largeur entre les pas
+                this.stepLength = 60; // Longueur entre les pas
+                this.isLeftFoot = true; // Pour alterner entre pied gauche et droit
+                this.lastPoint = null;
+                this.stepCount = 0; // Compteur de pas
+                this.createNewPath();
+            }
+
+            createNewPath() {
+                // Points de contrôle pour la courbe de Bézier
+                const startX = Math.random() * window.innerWidth;
+                const startY = Math.random() * window.innerHeight;
+                const endX = Math.random() * window.innerWidth;
+                const endY = Math.random() * window.innerHeight;
+                const controlX1 = startX + (Math.random() - 0.5) * window.innerWidth * 0.5;
+                const controlY1 = startY + (Math.random() - 0.5) * window.innerHeight * 0.5;
+                const controlX2 = endX + (Math.random() - 0.5) * window.innerWidth * 0.5;
+                const controlY2 = endY + (Math.random() - 0.5) * window.innerHeight * 0.5;
+
+                this.currentPath = {
+                    startX, startY,
+                    endX, endY,
+                    controlX1, controlY1,
+                    controlX2, controlY2,
+                    startTime: Date.now()
+                };
+                this.lastPoint = null;
+            }
+
+            getPointOnPath(progress) {
+                const t = progress;
+                const x = Math.pow(1 - t, 3) * this.currentPath.startX +
+                         3 * Math.pow(1 - t, 2) * t * this.currentPath.controlX1 +
+                         3 * (1 - t) * Math.pow(t, 2) * this.currentPath.controlX2 +
+                         Math.pow(t, 3) * this.currentPath.endX;
+                const y = Math.pow(1 - t, 3) * this.currentPath.startY +
+                         3 * Math.pow(1 - t, 2) * t * this.currentPath.controlY1 +
+                         3 * (1 - t) * Math.pow(t, 2) * this.currentPath.controlY2 +
+                         Math.pow(t, 3) * this.currentPath.endY;
+                return { x, y };
+            }
+
+            getRotation(progress) {
+                const t = progress;
+                const dx = 3 * Math.pow(1 - t, 2) * (this.currentPath.controlX1 - this.currentPath.startX) +
+                          6 * (1 - t) * t * (this.currentPath.controlX2 - this.currentPath.controlX1) +
+                          3 * Math.pow(t, 2) * (this.currentPath.endX - this.currentPath.controlX2);
+                const dy = 3 * Math.pow(1 - t, 2) * (this.currentPath.controlY1 - this.currentPath.startY) +
+                          6 * (1 - t) * t * (this.currentPath.controlY2 - this.currentPath.controlY1) +
+                          3 * Math.pow(t, 2) * (this.currentPath.endY - this.currentPath.controlY2);
+                return Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+            }
+
+            getOffsetPoint(point, rotation, isLeft) {
+                // Calculer le point décalé perpendiculairement au chemin
+                const angle = (rotation - 90) * (Math.PI / 180);
+                
+                // Décalage latéral (gauche/droite)
+                const lateralOffset = isLeft ? -this.stepWidth : this.stepWidth;
+                
+                // Décalage avant/arrière basé sur le compteur de pas
+                const forwardOffset = (this.stepCount % 2 === 0) ? this.stepLength/2 : -this.stepLength/2;
+                
+                return {
+                    x: point.x + Math.cos(angle) * lateralOffset + Math.cos(angle - Math.PI/2) * forwardOffset,
+                    y: point.y + Math.sin(angle) * lateralOffset + Math.sin(angle - Math.PI/2) * forwardOffset
+                };
+            }
+
+            createFootprint() {
+                const now = Date.now();
+                if (now - this.lastFootprintTime < this.footprintInterval) return;
+                this.lastFootprintTime = now;
+
+                const elapsed = now - this.currentPath.startTime;
+                const progress = Math.min(elapsed / this.pathDuration, 1);
+
+                if (progress >= 1) {
+                    this.createNewPath();
+                    return;
+                }
+
+                const point = this.getPointOnPath(progress);
+                const rotation = this.getRotation(progress);
+                const offsetPoint = this.getOffsetPoint(point, rotation, this.isLeftFoot);
+
+                const footprint = document.createElement('div');
+                footprint.className = 'footprint';
+                footprint.style.left = `${offsetPoint.x}px`;
+                footprint.style.top = `${offsetPoint.y}px`;
+                footprint.style.setProperty('--rotation', `${rotation}deg`);
+
+                document.querySelector('.footprints-container').appendChild(footprint);
+
+                // Alterner entre pied gauche et droit
+                this.isLeftFoot = !this.isLeftFoot;
+                this.lastPoint = point;
+                this.stepCount++;
+
+                // Supprimer l'empreinte après l'animation
+                setTimeout(() => {
+                    footprint.remove();
+                }, 3000);
+            }
+
+            update() {
+                this.createFootprint();
+                requestAnimationFrame(() => this.update());
+            }
+        }
+
+        // Démarrer l'animation
+        const footprintPath = new FootprintPath();
+        footprintPath.update();
+
+        // Animation du bouton au survol
+        const button = document.querySelector('.enter-button');
+        button.addEventListener('mousemove', (e) => {
+            const rect = button.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            button.style.setProperty('--x', `${x}px`);
+            button.style.setProperty('--y', `${y}px`);
+        });
+    </script>
 </body>
 </html>
