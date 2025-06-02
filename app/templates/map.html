@@ -9,19 +9,33 @@
 </head>
 <body>
     <h1>Z-map</h1>
-    <div id="map-container">
-        <img id="map" src="{{ url_for('static', filename='images/map.png') }}" alt="Map">
-        <canvas id="canvas"></canvas>
+    
+    <div class="prediction-section">
+        <div class="security-cameras">
+            <div class="camera camera-left">📹</div>
+            <div class="camera camera-right">📹</div>
+        </div>
+        <div id="prediction">
+            Pas assez de données pour prédire
+        </div>
     </div>
-    <div id="prediction" style="position: absolute; right: 0; top: 0; width: 200px; padding: 10px; background-color: #f0f0f0; border: 1px solid #ccc;">
-        Pas assez de données pour prédire
+
+    <div class="container">
+        <div id="map-container">
+            <img id="map" src="{{ url_for('static', filename='images/map.png') }}" alt="Map">
+            <canvas id="canvas"></canvas>
+        </div>
+        
+        <div class="sidebar">
+            <div id="positions-table">
+                <tr>
+                    <th onclick="sortTable(0)">Salle</th>
+                    <th onclick="sortTable(1)">Horaire</th>
+                </tr>
+            </div>
+        </div>
     </div>
-    <table id="positions-table" style="position: absolute; right: 0; top: 50px; width: 200px; border-collapse: collapse;">
-        <tr>
-            <th onclick="sortTable(0)">Salle</th>
-            <th onclick="sortTable(1)">Horaire</th>
-        </tr>
-    </table>
+
     <div id="form-container" style="display: none; position: absolute; background: white; border: 1px solid black; padding: 10px;">
         <form id="position-form">
             <label for="pseudo">Pseudo:</label>
@@ -88,7 +102,7 @@
                 <option value="P28">P28</option>
                 <option value="Compaore">Compaore</option>
             </select><br>
-            <button type="submit">Envoyer</button>
+            <button type="submit">🎯 Z repéré</button>
         </form>
     </div>
     <script src="{{ url_for('static', filename='js/map.js') }}"></script>

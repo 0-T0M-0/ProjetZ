@@ -34,6 +34,81 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Animations de fond */
+.background-animations {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Animation des caméras de surveillance */
+.security-cameras {
+    position: absolute;
+    width: 100%;
+    top: -30px;
+    left: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px;
+}
+
+.camera {
+    font-size: 1.5rem;
+    opacity: 0.6;
+    transition: transform 0.3s ease;
+}
+
+.camera-left {
+    transform: rotate(180deg) rotate(-30deg);
+    animation: cameraRotate 8s infinite alternate ease-in-out;
+}
+
+.camera-right {
+    transform: rotate(180deg) rotate(30deg);
+    animation: cameraRotate 8s infinite alternate ease-in-out;
+}
+
+@keyframes cameraRotate {
+    0% {
+        transform: rotate(180deg) rotate(-30deg);
+    }
+    100% {
+        transform: rotate(180deg) rotate(30deg);
+    }
+}
+
+/* Animation du chat qui se cache */
+.stalking-cat {
+    position: absolute;
+    font-size: 2rem;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.stalking-cat.visible {
+    opacity: 1;
+}
+
+.stalking-cat::after {
+    content: '👀';
+    position: absolute;
+    font-size: 1.2rem;
+    top: -10px;
+    right: -10px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.stalking-cat.looking::after {
+    opacity: 1;
 }
 
 h1 {
@@ -42,6 +117,60 @@ h1 {
     font-weight: 500;
     margin-bottom: 1.5rem;
     text-align: center;
+    position: relative;
+    padding-bottom: 1rem;
+}
+
+h1::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: var(--primary-color);
+    border-radius: 2px;
+}
+
+.prediction-section {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto 2rem auto;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 6px var(--shadow-color);
+    padding: 1.5rem;
+    transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+    position: relative;
+}
+
+.prediction-section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px var(--shadow-color);
+}
+
+#prediction {
+    width: 100%;
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+#prediction::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--primary-color);
+    border-radius: 2px;
 }
 
 .container {
@@ -63,6 +192,12 @@ h1 {
     box-shadow: 0 4px 6px var(--shadow-color);
     overflow: hidden;
     position: relative;
+    transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+#map-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px var(--shadow-color);
 }
 
 #map {
@@ -87,12 +222,18 @@ h1 {
     height: fit-content;
 }
 
-#prediction, #positions-table {
+#positions-table {
     width: 100%;
     background: white;
     border-radius: var(--border-radius);
     box-shadow: 0 4px 6px var(--shadow-color);
     padding: 1.5rem;
+    transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+#positions-table:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px var(--shadow-color);
 }
 
 h2 {
@@ -112,12 +253,23 @@ th, td {
     padding: 0.75rem;
     text-align: left;
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    transition: background-color var(--transition-speed);
 }
 
 th {
     font-weight: 500;
     color: var(--text-color);
     background-color: rgba(66, 133, 244, 0.05);
+    cursor: pointer;
+    user-select: none;
+}
+
+th:hover {
+    background-color: rgba(66, 133, 244, 0.1);
+}
+
+tr {
+    transition: background-color var(--transition-speed);
 }
 
 tr:hover {
@@ -131,7 +283,7 @@ tr.morning-event {
 }
 
 /* Style pour le formulaire de signalement */
-#report-form {
+#form-container {
     background: white;
     padding: 1.5rem;
     border-radius: var(--border-radius);
@@ -146,7 +298,7 @@ tr.morning-event {
     display: none;
 }
 
-#report-form.visible {
+#form-container.visible {
     display: block;
     animation: formAppear 0.3s ease-out;
 }
@@ -179,7 +331,7 @@ input, select {
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 6px;
     font-size: 1rem;
-    transition: border-color var(--transition-speed);
+    transition: all var(--transition-speed);
 }
 
 input:focus, select:focus {
@@ -198,12 +350,32 @@ button {
     font-size: 1rem;
     font-weight: 500;
     transition: all var(--transition-speed);
+    position: relative;
+    overflow: hidden;
+}
+
+button::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
 }
 
 button:hover {
     background-color: #3367d6;
     transform: translateY(-1px);
     box-shadow: 0 2px 4px var(--shadow-color);
+}
+
+button:hover::after {
+    width: 300px;
+    height: 300px;
 }
 
 button:active {
@@ -243,6 +415,7 @@ button:active {
     z-index: 1000;
     max-width: 300px;
     display: none;
+    transition: all var(--transition-speed);
 }
 
 .info-window.visible {
@@ -279,6 +452,10 @@ button:active {
         grid-template-columns: 1fr;
     }
 
+    .prediction-section {
+        max-width: 100%;
+    }
+
     #map-container {
         width: 100%;
         height: 50vh;
@@ -292,6 +469,10 @@ button:active {
 
 @media (max-width: 768px) {
     body {
+        padding: 1rem;
+    }
+
+    .prediction-section {
         padding: 1rem;
     }
 
