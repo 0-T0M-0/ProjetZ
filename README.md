@@ -1,4 +1,21 @@
-# ProjetZ
+# Z-tracker
+
+## Description
+Z-tracker est une application Flask pour localiser un chat dans un bâtiment en temps réel. Elle utilise Flask, Flask-SocketIO, Flask-SQLAlchemy et une carte interactive avec JavaScript.
+
+## Installation
+1. Cloner le dépôt
+2. Créer un environnement virtuel et l'activer
+3. Installer les dépendances : `pip install -r requirements.txt`
+4. Exécuter l'application : `python run.py`
+
+## Fonctionnalités
+- Page /map affiche la carte et un canvas superposé.
+- L'utilisateur clique sur la carte pour signaler la position du chat (coordonnées + pseudo + salle).
+- Le serveur reçoit via WebSocket l'événement 'report_position', sauvegarde en base et diffuse à tous les clients via 'new_position'.
+- Le frontend dessine les positions en cercles rouges avec labels (pseudo, salle, heure).
+- Gestion du namespace Socket.IO '/ws' côté client et serveur.
+- Un bouton "Envoyer position" envoie une position fixe pour test.
 
 ## Architecture projet
 ```bash

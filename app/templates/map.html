@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Z-tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<body>
+    <h1>Z-map</h1>
+    <div id="map-container">
+        <img id="map" src="{{ url_for('static', filename='images/map.png') }}" alt="Map">
+        <canvas id="canvas"></canvas>
+    </div>
+    <div id="prediction" style="position: absolute; right: 0; top: 0; width: 200px; padding: 10px; background-color: #f0f0f0; border: 1px solid #ccc;">
+        Pas assez de données pour prédire
+    </div>
+    <table id="positions-table" style="position: absolute; right: 0; top: 50px; width: 200px; border-collapse: collapse;">
+        <tr>
+            <th onclick="sortTable(0)">Salle</th>
+            <th onclick="sortTable(1)">Horaire</th>
+        </tr>
+    </table>
+    <div id="form-container" style="display: none; position: absolute; background: white; border: 1px solid black; padding: 10px;">
+        <form id="position-form">
+            <label for="pseudo">Pseudo:</label>
+            <input type="text" id="pseudo" name="pseudo" required><br>
+            <label for="salle">Salle:</label>
+            <select id="salle" name="salle" required>
+                <option value="A012">A012</option>
+                <option value="A013">A013</option>
+                <option value="A016">A016</option>
+                <option value="A017">A017</option>
+                <option value="A101">A101</option>
+                <option value="A108">A108</option>
+                <option value="A110">A110</option>
+                <option value="A111">A111</option>
+                <option value="A115">A115</option>
+                <option value="A116">A116</option>
+                <option value="D03">D03</option>
+                <option value="J006">J006</option>
+                <option value="J008">J008</option>
+                <option value="J009">J009</option>
+                <option value="J012">J012</option>
+                <option value="J101">J101</option>
+                <option value="J106">J106</option>
+                <option value="j107">j107</option>
+                <option value="J108">J108</option>
+                <option value="J204">J204</option>
+                <option value="L208">L208</option>
+                <option value="L209">L209</option>
+                <option value="L211">L211</option>
+                <option value="L212">L212</option>
+                <option value="Foyer">Foyer</option>
+                <option value="Crous">Crous</option>
+                <option value="Autre">Autre</option>
+            </select><br>
+            <label for="groupe">Groupe:</label>
+            <select id="groupe" name="groupe" required>
+                <option value="P01">P01</option>
+                <option value="P02">P02</option>
+                <option value="P03">P03</option>
+                <option value="P04">P04</option>
+                <option value="P05">P05</option>
+                <option value="P06">P06</option>
+                <option value="P07">P07</option>
+                <option value="P08">P08</option>
+                <option value="P09">P09</option>
+                <option value="P10">P10</option>
+                <option value="P11">P11</option>
+                <option value="P12">P12</option>
+                <option value="P13">P13</option>
+                <option value="P14">P14</option>
+                <option value="P15">P15</option>
+                <option value="P16">P16</option>
+                <option value="P17">P17</option>
+                <option value="P18">P18</option>
+                <option value="P19">P19</option>
+                <option value="P20">P20</option>
+                <option value="P21">P21</option>
+                <option value="P22">P22</option>
+                <option value="P23">P23</option>
+                <option value="P24">P24</option>
+                <option value="P25">P25</option>
+                <option value="P26">P26</option>
+                <option value="P27">P27</option>
+                <option value="P28">P28</option>
+                <option value="Compaore">Compaore</option>
+            </select><br>
+            <button type="submit">Envoyer</button>
+        </form>
+    </div>
+    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+</body>
+</html> 
