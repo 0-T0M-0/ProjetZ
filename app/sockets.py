@@ -1,7 +1,26 @@
 from flask_socketio import Namespace, emit
 from app import db
 from app.models import Position
-from datetime import datetime
+from datetime import datetime, time
+import schedule
+import time as time_module
+import threading
+
+def clean_database():
+    Position.query.delete()
+    db.session.commit()
+    print("Database cleaned at", datetime.now())
+
+def run_scheduler():
+    schedule.every().day.at("18:00").do(clean_database)
+    while True:
+        schedule.run_pending()
+        time_module.sleep(60)
+
+# Démarrer le scheduler dans un thread séparé
+scheduler_thread = threading.Thread(target=run_scheduler)
+scheduler_thread.daemon = True
+scheduler_thread.start()
 
 class ws(Namespace):
     def on_connect(self):

@@ -95,6 +95,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return positions;
     }
 
+    function isMorningEvent(timestamp) {
+        const date = new Date(timestamp);
+        return date.getHours() < 13;
+    }
+
     function updateTable() {
         const table = document.getElementById('positions-table');
         if (!table) return;
@@ -104,6 +109,12 @@ document.addEventListener('DOMContentLoaded', () => {
         table.appendChild(header);
         positions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach(position => {
             const row = document.createElement('tr');
+            const isMorning = isMorningEvent(position.timestamp);
+            const currentHour = new Date().getHours();
+            if (currentHour >= 13 && isMorning) {
+                row.style.color = '#888';
+                row.style.fontStyle = 'italic';
+            }
             row.innerHTML = `<td>${position.salle}</td><td>${new Date(position.timestamp).toLocaleTimeString()}</td>`;
             table.appendChild(row);
         });
@@ -204,6 +215,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
         ctx.save();
     
+        const isMorning = isMorningEvent(data.timestamp);
+        const currentHour = new Date().getHours();
+        if (currentHour >= 13 && isMorning) {
+            ctx.globalAlpha = 0.5;
+        }
+    
         ctx.beginPath();
         // Partie ronde en haut
         ctx.arc(x, y - h / 2, r, Math.PI, 0, false);
@@ -233,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fill();
     
         // Texte salle + temps
-        ctx.fillStyle = 'black';
+        ctx.fillStyle = currentHour >= 13 && isMorning ? '#888' : 'black';
         ctx.font = '12px sans-serif';
         const timeAgo = getTimeAgo(data.timestamp);
         ctx.fillText(`${data.salle}, il y a ${timeAgo}`, x + 14, y);
