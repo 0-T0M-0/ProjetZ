@@ -28,11 +28,13 @@ class ws(Namespace):
         positions = Position.query.all()
         for position in positions:
             emit('new_position', {
+                'id': position.id,
                 'normalizedX': position.normalized_x,
                 'normalizedY': position.normalized_y,
                 'pseudo': position.pseudo,
                 'salle': position.salle,
                 'groupe': position.groupe,
+                'commentaire': position.commentaire,
                 'timestamp': position.timestamp.timestamp() * 1000
             })
 
@@ -51,8 +53,24 @@ class ws(Namespace):
             pseudo=data['pseudo'],
             salle=data['salle'],
             groupe=data['groupe'],
+            commentaire=data.get('commentaire', ''),  # Utiliser get() pour gérer le cas où commentaire n'est pas présent
             timestamp=datetime.fromtimestamp(data['timestamp'] / 1000)
         )
         db.session.add(position)
         db.session.commit()
+        data['id'] = position.id
         emit('new_position', data, broadcast=True)
+
+    def on_delete_position(self, data):
+        print("Received delete request:", data)
+        if 'id' not in data or 'pseudo' not in data:
+            print("Missing required keys in delete request")
+            return
+        
+        position = Position.query.get(data['id'])
+        if position and position.pseudo == data['pseudo']:
+            db.session.delete(position)
+            db.session.commit()
+            emit('position_deleted', {'id': data['id']}, broadcast=True)
+        else:
+            print("Position not found or unauthorized deletion attempt")

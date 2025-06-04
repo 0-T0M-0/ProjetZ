@@ -8,6 +8,7 @@ class Position(db.Model):
     pseudo = db.Column(db.String(50), nullable=False)
     salle = db.Column(db.String(50), nullable=False)
     groupe = db.Column(db.String(50), nullable=False)
+    commentaire = db.Column(db.Text, nullable=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):

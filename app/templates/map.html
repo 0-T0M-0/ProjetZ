@@ -102,7 +102,9 @@
                 <option value="P28">P28</option>
                 <option value="Compaore">Compaore</option>
             </select><br>
-            <button type="submit">🎯 Z repéré</button>
+            <label for="commentaire">Commentaire (optionnel):</label>
+            <textarea id="commentaire" name="commentaire" rows="3" placeholder="Ajouter un commentaire..."></textarea><br>
+            <button type="submit">Z repéré</button>
         </form>
     </div>
     <script src="{{ url_for('static', filename='js/map.js') }}"></script>

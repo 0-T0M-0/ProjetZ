@@ -9,14 +9,43 @@ document.addEventListener('DOMContentLoaded', () => {
     let userInfo = { pseudo: '', groupe: '' };
     let infoWindow = null;
     let clickX, clickY;
+    let showAllPoints = false;
+
+    // Fonction pour obtenir les positions à afficher sur la carte
+    function getPositionsToDisplay() {
+        if (showAllPoints) {
+            return positions;
+        }
+        return positions
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+            .slice(0, 10);
+    }
 
     // Fonction pour redimensionner le canvas en fonction de la taille de la fenêtre
     function resizeCanvas() {
         canvas.width = map.width;
         canvas.height = map.height;
-        // Redessiner toutes les positions après le redimensionnement
-        positions.forEach(pos => drawPosition(pos));
+        drawAllPositions();
     }
+
+    // Fonction pour dessiner les positions
+    function drawAllPositions() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const positionsToDraw = getPositionsToDisplay();
+        positionsToDraw.forEach(pos => drawPosition(pos));
+    }
+
+    // Ajouter le bouton de bascule après la carte
+    const mapContainer = document.getElementById('map-container');
+    const toggleButton = document.createElement('button');
+    toggleButton.className = 'toggle-points-btn';
+    toggleButton.textContent = 'Afficher tous les points';
+    toggleButton.onclick = () => {
+        showAllPoints = !showAllPoints;
+        toggleButton.textContent = showAllPoints ? 'Afficher les 10 derniers points' : 'Afficher tous les points';
+        drawAllPositions();
+    };
+    mapContainer.appendChild(toggleButton);
 
     // Écouter le redimensionnement de la fenêtre
     window.addEventListener('resize', resizeCanvas);
@@ -38,17 +67,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     canvas.addEventListener('click', (event) => {
         const rect = canvas.getBoundingClientRect();
-        // Convertir les coordonnées en valeurs normalisées (0-1)
         const normalizedX = (event.clientX - rect.left) / rect.width;
         const normalizedY = (event.clientY - rect.top) / rect.height;
         
-        // Convertir en coordonnées canvas pour l'affichage
         clickX = normalizedX * canvas.width;
         clickY = normalizedY * canvas.height;
 
         let clickedOnDrop = false;
-        positions.forEach(position => {
-            // Convertir les coordonnées stockées en coordonnées canvas pour la comparaison
+        const positionsToCheck = getPositionsToDisplay();
+        positionsToCheck.forEach(position => {
             const posX = position.normalizedX * canvas.width;
             const posY = position.normalizedY * canvas.height;
             if (Math.sqrt(Math.pow(posX - clickX, 2) + Math.pow(posY - clickY, 2)) < 20) {
@@ -59,14 +86,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     infoWindow = document.createElement('div');
                     infoWindow.className = 'info-window';
-                    infoWindow.style.left = `${event.clientX + 20}px`;
-                    infoWindow.style.top = `${event.clientY - 50}px`;
-                    infoWindow.innerHTML = `
+                    const windowX = event.clientX + 20;
+                    const windowY = event.clientY - 50;
+                    infoWindow.style.left = `${windowX}px`;
+                    infoWindow.style.top = `${windowY}px`;
+                    
+                    const content = document.createElement('div');
+                    content.innerHTML = `
                         <p>Pseudo: ${position.pseudo}</p>
                         <p>Salle: ${position.salle}</p>
                         <p>Groupe: ${position.groupe}</p>
                         <p>Heure: ${new Date(position.timestamp).toLocaleTimeString()}</p>
+                        ${position.commentaire ? `<p class="commentaire">Commentaire: ${position.commentaire}</p>` : ''}
                     `;
+                    
+                    if (position.pseudo === userInfo.pseudo) {
+                        const deleteButton = document.createElement('button');
+                        deleteButton.className = 'delete-btn';
+                        deleteButton.textContent = 'Supprimer';
+                        deleteButton.onclick = (e) => {
+                            e.stopPropagation();
+                            deletePosition(position);
+                        };
+                        content.appendChild(deleteButton);
+                    }
+                    
+                    infoWindow.appendChild(content);
                     document.body.appendChild(infoWindow);
                 }
             }
@@ -97,9 +142,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const pseudo = document.getElementById('pseudo').value;
         const salle = document.getElementById('salle').value;
         const groupe = document.getElementById('groupe').value;
+        const commentaire = document.getElementById('commentaire').value;
         userInfo = { pseudo, groupe };
         
-        // Utiliser les coordonnées normalisées pour l'envoi
         const normalizedX = clickX / canvas.width;
         const normalizedY = clickY / canvas.height;
         
@@ -108,7 +153,8 @@ document.addEventListener('DOMContentLoaded', () => {
             normalizedY,
             pseudo, 
             salle, 
-            groupe, 
+            groupe,
+            commentaire,
             timestamp: Date.now() 
         });
         
@@ -132,7 +178,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const header = document.createElement('tr');
         header.innerHTML = '<th onclick="sortTable(0)">Salle</th><th onclick="sortTable(1)">Horaire</th>';
         table.appendChild(header);
-        positions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach(position => {
+
+        // Trier toutes les positions par timestamp
+        const sortedPositions = positions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        sortedPositions.forEach(position => {
             const row = document.createElement('tr');
             const isMorning = isMorningEvent(position.timestamp);
             const currentHour = new Date().getHours();
@@ -174,18 +224,17 @@ document.addEventListener('DOMContentLoaded', () => {
     function predictNextSalle(positions) {
         if (positions.length < 2) return null;
 
-        const lastHour = Date.now() - 3600000; // 1 heure en millisecondes
-        const recentPositions = positions.filter(p => p.timestamp > lastHour);
+        // Prendre les 10 positions les plus récentes
+        const recentPositions = positions
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+            .slice(0, 10);
         
         if (recentPositions.length === 0) return null;
 
-        // Trier les positions par timestamp
-        recentPositions.sort((a, b) => b.timestamp - a.timestamp);
-        
         // Obtenir la dernière salle visitée
         const lastSalle = recentPositions[0].salle;
         
-        // Créer un ensemble des salles déjà visitées dans la dernière heure
+        // Créer un ensemble des salles déjà visitées
         const visitedSalles = new Set(recentPositions.map(p => p.salle));
         
         // Liste de toutes les salles possibles
@@ -228,7 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.on('new_position', (data) => {
         console.log('Received new position:', data);
         positions.push(data);
-        drawPosition(data);
+        drawAllPositions();
         updateTable();
         updatePrediction();
     });
@@ -296,4 +345,30 @@ document.addEventListener('DOMContentLoaded', () => {
             return `${Math.floor(diff / 60)} h`;
         }
     }
+
+    function deletePosition(position) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer ce point ?')) {
+            socket.emit('delete_position', {
+                id: position.id,
+                pseudo: position.pseudo
+            });
+            // Fermer la fenêtre d'information immédiatement
+            if (infoWindow) {
+                infoWindow.remove();
+                infoWindow = null;
+            }
+        }
+    }
+
+    socket.on('position_deleted', (data) => {
+        console.log('Position deleted:', data);
+        positions = positions.filter(p => p.id !== data.id);
+        if (infoWindow) {
+            infoWindow.remove();
+            infoWindow = null;
+        }
+        drawAllPositions();
+        updateTable();
+        updatePrediction();
+    });
 });
