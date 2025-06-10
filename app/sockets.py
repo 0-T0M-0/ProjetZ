@@ -16,11 +16,12 @@ CACHE_DURATION = 60  # Durée du cache en secondes
 def get_cached_positions():
     global POSITIONS_CACHE, CACHE_TIMESTAMP
     current_time = datetime.now()
+    todays_datetime = datetime(datetime.today().year, datetime.today().month, datetime.today().day)
     
     if (CACHE_TIMESTAMP is None or 
         (current_time - CACHE_TIMESTAMP).total_seconds() > CACHE_DURATION):
         # Mettre à jour le cache
-        POSITIONS_CACHE = Position.query.order_by(desc(Position.timestamp)).limit(100).all()
+        POSITIONS_CACHE = Position.query.filter(Position.timestamp > todays_datetime).order_by(desc(Position.timestamp)).limit(20).all()
         CACHE_TIMESTAMP = current_time
     
     return POSITIONS_CACHE
@@ -33,6 +34,7 @@ def clean_database():
     print("Database cleaned at", datetime.now())
 
 def run_scheduler():
+    return
     schedule.every().day.at("18:00").do(clean_database)
     while True:
         schedule.run_pending()
